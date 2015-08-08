@@ -1,0 +1,88 @@
+{
+  "name": "resource-file",
+  "description": "The Abstract Resource File Class. Each resource could have many custom attributes. These attributes could be a front-matter block in the same file, or as a separate configuration file exists.",
+  "version": "0.0.0",
+  "homepage": "https://github.com/snowyu/resource-file.js",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/snowyu/resource-file.js.git"
+  },
+  "main": "./index",
+  "files": [
+    "README.md",
+    "LICENSE-MIT",
+    "*.js",
+    "*.coffee",
+    "test",
+    "src",
+    "lib"
+  ],
+  "keywords": [
+    "resource",
+    "data",
+    "configuration",
+    "config",
+    "front-matter",
+    "markdown",
+    "file",
+    "fs",
+    "dir",
+    "directory",
+    "folder",
+    "abstract",
+    "class",
+    "klass"
+  ],
+  "dependencies": {
+    "custom-file": "^0.3.5",
+    "gray-matter": "^2.0.1",
+    "inherits-ex": "^1.1.3",
+    "load-config-file": "^0.2.2",
+    "load-config-folder": "^0.1.0",
+    "util-ex": "^0.3.10"
+  },
+  "devDependencies": {
+    "chai": "~1.10.0",
+    "coffee-coverage": "^0.6.2",
+    "grunt": "~0.4.5",
+    "grunt-contrib-clean": "~0.6.0",
+    "grunt-contrib-coffee": "~0.12.0",
+    "grunt-contrib-copy": "~0.7.0",
+    "grunt-contrib-watch": "~0.6.1",
+    "grunt-mocha-test": "~0.12.6",
+    "grunt-newer": "~0.8.0",
+    "grunt-release": "~0.9.0",
+    "istanbul": "^0.3.17",
+    "mocha": "~2.1.0",
+    "pre-commit": "~1.1.1",
+    "rimraf": "~2.2.8",
+    "shasum": "1.0.0",
+    "sinon": "~1.12.2",
+    "sinon-chai": "~2.6.0"
+  },
+  "scripts": {
+    "test": "grunt test",
+    "test-cov": "mocha --reporter dot && istanbul report text-summary lcovonly"
+  },
+  "contributors": [
+    {
+      "name": "Riceball LEE",
+      "email": "snowyu.lee@gmail.com",
+      "url": "https://github.com/snowyu"
+    }
+  ],
+  "maintainers": [
+    {
+      "name": "Riceball LEE",
+      "email": "snowyu.lee@gmail.com"
+    }
+  ],
+  "pre-commit": [
+    "test"
+  ],
+  "bugs": {
+    "url": "https://github.com/snowyu/resource-file.js/issues"
+  },
+  "license": "MIT",
+  "stability": "unstable"
+}
