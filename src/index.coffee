@@ -15,6 +15,10 @@ module.exports = class Resource
   inherits Resource, File
   @setFileSystem: CustomFile.setFileSystem
 
+  # filled by _updateFS:
+  fs = null
+  path = null
+
   constructor: (aPath, aOptions, done)->
     return new Resource(aPath, aOptions, done) unless @ instanceof Resource
     super
