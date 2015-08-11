@@ -47,6 +47,7 @@ module.exports = class Resource
     result = matter(aText, aOptions)
     result.skipSize = aText.length - result.content.length
     result
+
   loadConfig: (aOptions, aContents, done)->
     if !aOptions.stat.isDirectory()
       vFrontConf = @frontMatter(aContents.toString(), aOptions)
@@ -82,8 +83,9 @@ module.exports = class Resource
   _getBufferSync: (aFile)->
     result = super(aFile)
     conf = @loadConfigSync aFile, result
-    extend @, conf
-    result = conf.contents unless conf.contents
+    if conf
+      extend @, conf
+      result = conf.contents unless conf.contents
     result
   _getBuffer: (aFile, done)->
     that = @
@@ -91,7 +93,7 @@ module.exports = class Resource
       return done(err) if err
       @loadConfig aFile, result, (err, conf)->
         return done(err) if err
-        conf = {} unless isObject conf
-        extend that, conf
-        result = conf.contents unless conf.contents
+        if conf
+          extend that, conf
+          result = conf.contents unless conf.contents
         done(err, result)
