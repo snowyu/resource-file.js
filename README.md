@@ -9,9 +9,6 @@
 The Abstract Resource File Class inherited from
 [AdvanceFile](https://github.com/snowyu/custom-file.js/blob/master/src/advance.coffee)
 
-The contents of the resource is string if possible(The `text` option's value is true
-via default).
-
 Each resource could have many custom attributes. These attributes could be a
 [front-matter](http://jekyllrb.com/docs/frontmatter/) block in the same file,
 or as a separate configuration file exists.
