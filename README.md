@@ -27,19 +27,40 @@ You can add the following configuration format(extname):
 * TOML: .toml, .ini
 * JSON: .json
 
+You should register these formats by yourself.
 
 It's only exists the separate configuration file if the resource if a folder.
 The folder's configuration file name could be:
 
-* _config.(yml|cson|ini|json)
+* `_config.(yml|cson|ini|json)`
 * (index|readme).md
 
+The folder's configuration file names need to be registered too.
 
 ## Usage
 
+```coffee
+loadCfgFile     = require 'load-config-file'
+loadCfgFolder   = require 'load-config-folder'
+yaml            = require 'gray-matter/lib/js-yaml'
+
+loadCfgFile.register 'yml', yaml.safeLoad
+loadCfgFolder.register 'yml', yaml.safeLoad
+loadCfgFolder.addConfig '_config'
+
+res = Resource './test/fixture'
+res.loadSync(read:true)
+res.should.have.property 'config', '_config'
+
+res = resouce './test/'
+```
 
 ## API
 
+## TODOs
+
++ remove the folder's configuration file item from the contents of the folder.
++ replace the plain file object to the file object for customized contents of a folder.
 
 ## License
 
