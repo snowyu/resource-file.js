@@ -38,7 +38,7 @@ describe 'ResourceFile', ->
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', 'file0'
-    it.only 'should load a resource folder recursively', ->
+    it 'should load a resource folder recursively', ->
       res = Resource 'fixture', cwd: __dirname
       should.exist res
       res.loadSync(read:true, recursive:true)

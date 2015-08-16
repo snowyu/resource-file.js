@@ -111,7 +111,6 @@ module.exports = class Resource
       vFrontConf = @frontMatter(aContents.toString(), aOptions)
       result = loadCfgFile aOptions.path, aOptions
       result = {} unless isObject result
-      console.log 'cfg', result
       if vFrontConf and vFrontConf.skipSize
         result = extend result, vFrontConf.data
         if result.contents
@@ -135,7 +134,6 @@ module.exports = class Resource
     conf = @loadConfigSync aFile, result
     if conf
       result = conf.contents if conf.contents
-      console.log 'cfgPath',conf.$cfgPath
       if conf.$cfgPath
         result = result.filter (f)->f.path isnt conf.$cfgPath
     result
