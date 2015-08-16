@@ -17,6 +17,9 @@ setImmediate    = setImmediate || process.nextTick
 Resource.setFileSystem fs
 
 describe 'ResourceFile', ->
+  loadCfgFile.register 'yml', yaml.safeLoad
+  loadCfgFolder.register 'yml', yaml.safeLoad
+  loadCfgFolder.addConfig '_config'
 
   it 'should get a resouce', ->
     res = Resource 'fixture', cwd: __dirname
@@ -24,18 +27,27 @@ describe 'ResourceFile', ->
     res.should.be.instanceOf Resource
   describe '#loadSync', ->
     it 'should load a resouce folder', ->
-      loadCfgFile.register 'yml', yaml.safeLoad
-      loadCfgFolder.register 'yml', yaml.safeLoad
-      loadCfgFolder.addConfig '_config'
       res = Resource 'fixture', cwd: __dirname
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', '_config'
     it 'should load a resouce file', ->
-      loadCfgFile.register 'yml', yaml.safeLoad
-      loadCfgFolder.register 'yml', yaml.safeLoad
-      loadCfgFolder.addConfig '_config'
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', 'file0'
+  describe '#load', ->
+    it 'should load a resouce folder', (done)->
+      res = Resource 'fixture', cwd: __dirname
+      should.exist res
+      res.load read:true, (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', '_config'
+        done()
+    it 'should load a resouce file', (done)->
+      res = Resource 'fixture/file0.md', cwd: __dirname
+      should.exist res
+      res.load read:true, (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', 'file0'
+        done()

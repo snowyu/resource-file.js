@@ -75,8 +75,8 @@ module.exports = class Resource
       if aConfig
         that.assign aConfig
         aContents = aConfig.contents if aConfig.contents
-        aContents = aContents.filter (f)->f.isDirectoy()
         if aOptions.recursive and that.isDirectoy()
+          aContents = aContents.filter (f)->f.isDirectory()
           Promise.map aContents, (f)->
             f.load aOptions
           .nodeify (err, result)->
@@ -85,11 +85,14 @@ module.exports = class Resource
           done(err, aConfig)
       else
         done(err, aConfig)
+      return
+
     if !aOptions.stat.isDirectory()
       vFrontConf = @frontMatter(aContents.toString(), aOptions)
       loadCfgFile aOptions.path, aOptions, (err, result)->
         return done(err) if err
         if vFrontConf and vFrontConf.skipSize
+          result = {} unless isObject result
           result = extend result, vFrontConf.data
           #aOptions.skipSize = vFrontConf.skipSize
           if result.contents
@@ -135,7 +138,7 @@ module.exports = class Resource
     that = @
     super aFile, (err, result)->
       return done(err) if err
-      @loadConfig aFile, result, (err, conf)->
+      that.loadConfig aFile, result, (err, conf)->
         return done(err) if err
         if conf
           #extend that, conf
