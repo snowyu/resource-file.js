@@ -61,6 +61,7 @@ res = resouce './test/'
 
 + remove the folder's configuration file item from the contents of the folder.
 + replace the plain file object to the file object for customized contents of a folder.
+* recursive the replaced contents "virtual folder".
 
 ## License
 
