@@ -30,6 +30,7 @@ module.exports = class Resource
   File.defineProperties Resource, extend
     isDir:
       type: 'Boolean'
+      alias: ['isDirectory']
   , File::$attributes
 
   defineProperty @::, 'parent', undefined,
@@ -55,7 +56,7 @@ module.exports = class Resource
     path = fs.path if fs and !path
     return
   isDirectory: ->
-    if @hasOwnProperty 'isDir'
+    if @hasOwnProperty('isDir') and @isDir isnt undefined
       result = @isDir
     else
       result = super()
@@ -75,7 +76,7 @@ module.exports = class Resource
       if aConfig
         that.assign aConfig
         aContents = aConfig.contents if aConfig.contents
-        if aOptions.recursive and that.isDirectoy()
+        if aOptions.recursive and that.isDirectory()
           aContents = aContents.filter (f)->f.isDirectory()
           Promise.map aContents, (f)->
             f.load aOptions
@@ -110,6 +111,7 @@ module.exports = class Resource
       vFrontConf = @frontMatter(aContents.toString(), aOptions)
       result = loadCfgFile aOptions.path, aOptions
       result = {} unless isObject result
+      console.log 'cfg', result
       if vFrontConf and vFrontConf.skipSize
         result = extend result, vFrontConf.data
         if result.contents
@@ -121,17 +123,21 @@ module.exports = class Resource
       result = loadCfgFolder aOptions.path, aOptions
     if result
       @assign result
+      @$cfgPath = result.$cfgPath if result.$cfgPath
       aContents = result.contents if result.contents
-      if aOptions.recursive and @isDirectoy()
+      if aOptions.recursive and @isDirectory()
         for vFile in aContents
-          vFile.loadSync aOptions if vFile.isDirectoy()
+          vFile.loadSync aOptions if vFile.isDirectory()
     result
 
   _getBufferSync: (aFile)->
     result = super(aFile)
     conf = @loadConfigSync aFile, result
     if conf
-      result = conf.contents unless conf.contents
+      result = conf.contents if conf.contents
+      console.log 'cfgPath',conf.$cfgPath
+      if conf.$cfgPath
+        result = result.filter (f)->f.path isnt conf.$cfgPath
     result
 
   _getBuffer: (aFile, done)->
@@ -142,5 +148,5 @@ module.exports = class Resource
         return done(err) if err
         if conf
           #extend that, conf
-          result = conf.contents unless conf.contents
+          result = conf.contents if conf.contents
         done(err, result)
