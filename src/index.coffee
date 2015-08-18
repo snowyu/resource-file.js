@@ -2,7 +2,7 @@ CustomFile        = require 'custom-file'
 File              = require 'custom-file/lib/advance'
 inherits          = require 'inherits-ex/lib/inherits'
 getPrototypeOf    = require 'inherits-ex/lib/getPrototypeOf'
-matter            = require 'gray-matter'
+matter            = require 'front-matter-markdown/lib/'
 loadCfgFile       = require 'load-config-file'
 loadCfgFolder     = require 'load-config-folder'
 extend            = require 'util-ex/lib/_extend'
@@ -27,6 +27,9 @@ module.exports = class Resource
 
   @defineProperties: File.defineProperties
 
+  matter.setOptionAlias 'toc', ['isDir', 'isDirectory']
+  matter.setOptionAlias 'heading', ['dirHeading', 'dirHeadings']
+  matter.setOptionAlias 'headingsAsToc', 'headingsAsToc'
   File.defineProperties Resource, extend
     isDir:
       type: 'Boolean'
@@ -55,6 +58,7 @@ module.exports = class Resource
     fs = @fs unless fs
     path = fs.path if fs and !path
     return
+
   isDirectory: ->
     if @hasOwnProperty('isDir') and @isDir isnt undefined
       result = @isDir
@@ -62,11 +66,23 @@ module.exports = class Resource
       result = super()
     result
 
-  # return {data:{title:1}, skipSize: 17, content}
+  getContentSync: (aOptions)->
+    aOptions = {} unless isObject aOptions
+    aOptions.overwrite = true unless aOptions.overwrite? or @loaded()
+    super aOptions
+
+  getContent: (aOptions, done)->
+    if isFunction aOptions
+      done = aOptions
+    aOptions = {} unless isObject aOptions
+    aOptions.overwrite = true unless aOptions.overwrite? or @loaded()
+    super aOptions, done
+
+  # frontMatter('---\ntitle: 1\n---\nbody')
+  # return {title:1, skipSize: 17, content: 'body', $compiled:[...]}
   frontMatter: (aText, aOptions)->
-    # return {org:'---\ntitle: 1\n---\nbody', data:{title:1}, content:'body'}
     result = matter(aText, aOptions)
-    result.skipSize = aText.length - result.content.length
+    # TODO:whether export the non-enumerable $compiled attribute?
     result
 
   loadConfig: (aOptions, aContents, done)->
@@ -94,7 +110,7 @@ module.exports = class Resource
         return done(err) if err
         if vFrontConf and vFrontConf.skipSize
           result = {} unless isObject result
-          result = extend result, vFrontConf.data
+          result = extend result, vFrontConf
           #aOptions.skipSize = vFrontConf.skipSize
           if result.contents
             # do not enable the skipSize, but remember the position.
@@ -112,7 +128,7 @@ module.exports = class Resource
       result = loadCfgFile aOptions.path, aOptions
       result = {} unless isObject result
       if vFrontConf and vFrontConf.skipSize
-        result = extend result, vFrontConf.data
+        result = extend result, vFrontConf
         if result.contents
           result.skipSize = -vFrontConf.skipSize
         else
