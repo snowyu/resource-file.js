@@ -176,6 +176,7 @@ module.exports = class Resource
           @convertVirtualFolder(result.contents)
           aContents = result.contents
         if aOptions.recursive
+          # TODO: it must be loaded first if the file treat as virtual folder.
           aContents = aContents.filter (f)->f.isDirectory()
           for vFile in aContents
             vFile.loadSync aOptions if vFile instanceof Resource
