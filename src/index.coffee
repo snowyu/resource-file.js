@@ -2,11 +2,14 @@ CustomFile        = require 'custom-file'
 File              = require 'custom-file/lib/advance'
 inherits          = require 'inherits-ex/lib/inherits'
 getPrototypeOf    = require 'inherits-ex/lib/getPrototypeOf'
+setPrototypeOf    = require 'inherits-ex/lib/setPrototypeOf'
 matter            = require 'front-matter-markdown/lib/'
 loadCfgFile       = require 'load-config-file'
 loadCfgFolder     = require 'load-config-folder'
 extend            = require 'util-ex/lib/_extend'
 isObject          = require 'util-ex/lib/is/type/object'
+isString          = require 'util-ex/lib/is/type/string'
+isArray           = require 'util-ex/lib/is/type/array'
 defineProperty    = require 'util-ex/lib/defineProperty'
 Promise           = require 'bluebird'
 createFileObject  = require './create-file-object'
@@ -59,12 +62,33 @@ module.exports = class Resource
     path = fs.path if fs and !path
     return
 
+  # TODO: howto validate a virtual file?
+  # fake a stat object.
+  # currently has only virtual folder object. (no virtual file yet)
+  #_validate: (file)-> file.hasOwnProperty('contents') and file.contents?
+  inspect: ->
+    name = 'File'
+    if @loaded()
+      name = 'Folder' if @isDirectory()
+    else
+      name += '?'
+    '<'+ name + ' ' + @_inspect() + '>'
+
   isDirectory: ->
     if @hasOwnProperty('isDir') and @isDir isnt undefined
       result = @isDir
     else
       result = super()
     result
+
+  toObject: (options, aExclude)->
+    if isString aExclude
+      aExclude = [aExclude]
+    else if !isArray aExclude
+      aExclude = []
+    aExclude.push 'contents' unless @hasOwnProperty('contents')
+    aExclude.push 'stat' unless @hasOwnProperty('stat')
+    @exportTo(options, aExclude)
 
   getContentSync: (aOptions)->
     aOptions = {} unless isObject aOptions
@@ -85,23 +109,31 @@ module.exports = class Resource
     # TODO:whether export the non-enumerable $compiled attribute?
     result
 
+  convertVirtualFolder: (aContents)->
+    for k in aContents
+      if k.path?
+        k.base = @path
+        setPrototypeOf k, @
+    aContents
+
   loadConfig: (aOptions, aContents, done)->
     that = @
     processCfg = (err, aConfig)->
       return done(err) if err
       if aConfig
         that.assign aConfig
-        aContents = aConfig.contents if aConfig.contents
-        if aOptions.recursive and that.isDirectory()
-          aContents = aContents.filter (f)->f.isDirectory()
-          Promise.map aContents, (f)->
-            f.load aOptions
-          .nodeify (err, result)->
-            done(err, aConfig)
-        else
-          done(err, aConfig)
-      else
-        done(err, aConfig)
+        if that.isDirectory()
+          if aConfig.contents #virtual folder
+            that.convertVirtualFolder(result.contents)
+            aContents = result.contents
+          if aOptions.recursive
+            aContents = aContents.filter (f)->f.isDirectory()
+            Promise.map aContents, (f)->
+              f.load aOptions if f instanceof Resource
+            .nodeify (err, result)->
+              done(err, aConfig)
+            return
+      done(err, aConfig)
       return
 
     if !aOptions.stat.isDirectory()
@@ -139,10 +171,14 @@ module.exports = class Resource
     if result
       @assign result
       @$cfgPath = result.$cfgPath if result.$cfgPath
-      aContents = result.contents if result.contents
-      if aOptions.recursive and @isDirectory()
-        for vFile in aContents
-          vFile.loadSync aOptions if vFile.isDirectory()
+      if @isDirectory()
+        if result.contents #virtual folder
+          @convertVirtualFolder(result.contents)
+          aContents = result.contents
+        if aOptions.recursive
+          aContents = aContents.filter (f)->f.isDirectory()
+          for vFile in aContents
+            vFile.loadSync aOptions if vFile instanceof Resource
     result
 
   _getBufferSync: (aFile)->
