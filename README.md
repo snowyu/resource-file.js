@@ -62,10 +62,11 @@ res = resouce './test/'
 + remove the folder's configuration file item from the contents of the folder.
 + replace the plain file object to the file object for customized contents of a folder.
 * recursive the replaced contents "virtual folder".
-  * howto load file contents recursively? or load on demand?
+  * How to load file contents recursively? or load on demand?
     because it may be exceed max memory if load all files at once.
     can use the getContent as load on demand.
     now the `getContent/getContentSync` supports the lazy load.
+    But I must load the `file` first if it is a virtual folder.
 
 ## License
 
