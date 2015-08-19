@@ -16,6 +16,13 @@ createFileObject  = require './create-file-object'
 setImmediate  = setImmediate || process.nextTick
 Promise.promisifyAll File, filter:(name,fn)->name in ['load']
 
+markdownExts = [
+  '.txt'
+  '.md', '.mdown', '.markdown', '.mkd','.mkdn'
+  '.mdwn', '.mdtext','.mdtxt'
+  '.text'
+]
+
 module.exports = class Resource
   inherits Resource, File
   @setFileSystem: CustomFile.setFileSystem
@@ -105,8 +112,9 @@ module.exports = class Resource
   # frontMatter('---\ntitle: 1\n---\nbody')
   # return {title:1, skipSize: 17, content: 'body', $compiled:[...]}
   frontMatter: (aText, aOptions)->
-    result = matter(aText, aOptions)
-    # TODO:whether export the non-enumerable $compiled attribute?
+    if @extname in markdownExts
+      result = matter(aText.toString(), aOptions)
+      # TODO:whether export the non-enumerable $compiled attribute?
     result
 
   convertVirtualFolder: (aContents)->
@@ -121,24 +129,29 @@ module.exports = class Resource
     processCfg = (err, aConfig)->
       return done(err) if err
       if aConfig
-        that.assign aConfig
+        that.assign aConfig, 'contents'
         if that.isDirectory()
           if aConfig.contents #virtual folder
-            that.convertVirtualFolder(result.contents)
-            aContents = result.contents
+            that.convertVirtualFolder(aConfig.contents)
+            aContents = aConfig.contents
           if aOptions.recursive
-            aContents = aContents.filter (f)->f.isDirectory()
-            Promise.map aContents, (f)->
-              f.load aOptions if f instanceof Resource
-            .nodeify (err, result)->
-              done(err, aConfig)
-            return
+            aContents.forEach (f)->
+              f.loadSync aOptions if (f instanceof Resource) and f.isDirectory()
+            #aContents = aContents.filter (f)->(f instanceof Resource) and f.isDirectory()
+            # can not work!!:
+            # Promise.map aContents, (f)->
+            #   f.load aOptions
+            # .nodeify (err, result)->
+            #   done(err, aConfig)
+            # return
       done(err, aConfig)
       return
 
     if !aOptions.stat.isDirectory()
-      vFrontConf = @frontMatter(aContents.toString(), aOptions)
-      loadCfgFile aOptions.path, aOptions, (err, result)->
+      vFrontConf = @frontMatter(aContents, aOptions)
+      vOptions = exclude: aOptions.path #avoid load twice.
+      vOptions.configurators = aOptions.configurators if aOptions.configurators
+      loadCfgFile aOptions.path, vOptions, (err, result)->
         return done(err) if err
         if vFrontConf and vFrontConf.skipSize
           result = {} unless isObject result
@@ -157,7 +170,9 @@ module.exports = class Resource
   loadConfigSync: (aOptions, aContents)->
     if !aOptions.stat.isDirectory()
       vFrontConf = @frontMatter(aContents.toString(), aOptions)
-      result = loadCfgFile aOptions.path, aOptions
+      vOptions = exclude: aOptions.path #avoid load twice.
+      vOptions.configurators = aOptions.configurators if aOptions.configurators
+      result = loadCfgFile aOptions.path, vOptions
       result = {} unless isObject result
       if vFrontConf and vFrontConf.skipSize
         result = extend result, vFrontConf
@@ -169,7 +184,7 @@ module.exports = class Resource
     else
       result = loadCfgFolder aOptions.path, aOptions
     if result
-      @assign result
+      @assign result, 'contents'
       @$cfgPath = result.$cfgPath if result.$cfgPath
       if @isDirectory()
         if result.contents #virtual folder
@@ -177,9 +192,9 @@ module.exports = class Resource
           aContents = result.contents
         if aOptions.recursive
           # TODO: it must be loaded first if the file treat as virtual folder.
-          aContents = aContents.filter (f)->f.isDirectory()
-          for vFile in aContents
-            vFile.loadSync aOptions if vFile instanceof Resource
+          aContents.forEach (f)->
+            if (f instanceof Resource) and f.isDirectory()
+              f.loadSync aOptions if result
     result
 
   _getBufferSync: (aFile)->
@@ -188,7 +203,10 @@ module.exports = class Resource
     if conf
       result = conf.contents if conf.contents
       if conf.$cfgPath
-        result = result.filter (f)->f.path isnt conf.$cfgPath
+        if @isDirectory()
+          result = result.filter (f)->f.path isnt conf.$cfgPath
+        else if (vDir = @parent)
+          vDir.contents = vDir.contents.filter (f)->f.path isnt conf.$cfgPath
     result
 
   _getBuffer: (aFile, done)->
@@ -200,4 +218,9 @@ module.exports = class Resource
         if conf
           #extend that, conf
           result = conf.contents if conf.contents
+          if conf.$cfgPath
+            if that.isDirectory()
+              result = result.filter (f)->f.path isnt conf.$cfgPath
+            else if (vDir = that.parent)
+              vDir.contents = vDir.contents.filter (f)->f.path isnt conf.$cfgPath
         done(err, result)
