@@ -44,6 +44,17 @@ describe 'ResourceFile', ->
       res.loadSync(read:true, recursive:true)
       should.exist res.contents
       res.should.have.property 'config', '_config'
+      res.contents.should.have.length 5
+      res.contents[2].getContentSync()
+      res.contents.should.have.length 4
+      result = []
+      res.contents.forEach (i)->result.push i.inspect()
+      result.should.be.deep.equal [
+        '<File? "fixture/file0.md">'
+        '<Folder "fixture/folder">'
+        '<File "fixture/unknown">'
+        '<File? "fixture/vfolder.md">'
+      ]
   describe '#load', ->
     it 'should load a resource folder', (done)->
       res = Resource 'fixture', cwd: __dirname
@@ -58,4 +69,23 @@ describe 'ResourceFile', ->
       res.load read:true, (err, result)->
         return done(err) if err
         res.should.have.property 'config', 'file0'
+        done()
+    it 'should load a resource folder recursively', (done)->
+      res = Resource 'fixture', cwd: __dirname
+      should.exist res
+      res.load read:true, recursive:true, (err, contents)->
+        return done(err) if err
+        should.exist contents
+        res.should.have.property 'config', '_config'
+        contents.should.have.length 5
+        res.contents[2].getContentSync()
+        res.contents.should.have.length 4
+        result = []
+        res.contents.forEach (i)->result.push i.inspect()
+        result.should.be.deep.equal [
+          '<File? "fixture/file0.md">'
+          '<Folder "fixture/folder">'
+          '<File "fixture/unknown">'
+          '<File? "fixture/vfolder.md">'
+        ]
         done()
