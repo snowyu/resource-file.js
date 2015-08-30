@@ -63,6 +63,8 @@ The Resource File Class inherited from
 
 ## TODO
 
++ Stream supports.
+
 ## License
 
 MIT
