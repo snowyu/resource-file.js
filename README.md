@@ -6,12 +6,11 @@
 [![downloads](https://img.shields.io/npm/dm/resource-file.svg)](https://npmjs.org/package/resource-file)
 [![license](https://img.shields.io/npm/l/resource-file.svg)](https://npmjs.org/package/resource-file)
 
-The Abstract Resource File Class inherited from
-[AdvanceFile](https://github.com/snowyu/custom-file.js/blob/master/src/advance.coffee)
+Add a configuration data to a resource [file object][AdvanceFile].
 
-Each resource could have many custom attributes. These attributes could be a
-[front-matter](http://jekyllrb.com/docs/frontmatter/) block in the same file,
-or as a separate configuration file exists.
+Each resource could have many custom attributes. These attributes may come from
+a [front-matter](http://jekyllrb.com/docs/frontmatter/) block in the same file,
+or as a separate configuration file exists with the same basename.
 
 The priority is the front-matter > configuration file if they are both exist.
 
@@ -27,7 +26,7 @@ You can add the following configuration format(extname):
 * TOML: .toml, .ini
 * JSON: .json
 
-You should register these formats by yourself.
+You should register these formats by youself.
 
 It's only exists the separate configuration file if the resource if a folder.
 The folder's configuration file name could be:
@@ -57,17 +56,14 @@ res = resouce './test/'
 
 ## API
 
-## TODOs
+The Resource File Class inherited from
+[AdvanceFile][AdvanceFile]
 
-+ remove the folder's configuration file item from the contents of the folder.
-+ replace the plain file object to the file object for customized contents of a folder.
-* recursive the replaced contents "virtual folder".
-  * How to load file contents recursively? or load on demand?
-    because it may be exceed max memory if load all files at once.
-    can use the getContent as load on demand.
-    now the `getContent/getContentSync` supports the lazy load.
-    But I must load the `file` first if it is a virtual folder.
+
+## TODO
 
 ## License
 
 MIT
+
+[AdvanceFile]: https://github.com/snowyu/custom-file.js/blob/master/src/advance.coffee
