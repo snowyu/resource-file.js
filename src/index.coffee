@@ -56,8 +56,7 @@ module.exports = class Resource
   createFileObject: (aOptions, aFilter)->
     aOptions.cwd = @cwd # for ReadDirStream
     aOptions.base = @base
-    if !aFilter and @hasOwnProperty 'filter'
-      aFilter = @filter
+    aFilter ?= @filter #if !aFilter and @hasOwnProperty 'filter'
     if !isFunction(aFilter) or aFilter(aOptions)
       result = createFileObject @, aOptions
     result
