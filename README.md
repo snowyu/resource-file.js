@@ -8,8 +8,9 @@
 
 Add a configuration data to a resource [file object][AdvanceFile].
 
+The resource could be a folder or a file.
 Each resource could have many custom attributes. These attributes may come from
-a [front-matter](http://jekyllrb.com/docs/frontmatter/) block in the same file,
+a [front-matter](http://jekyllrb.com/docs/frontmatter/) block in the same text file,
 or as a separate configuration file exists with the same basename.
 
 The priority is the front-matter > configuration file if they are both exist.
