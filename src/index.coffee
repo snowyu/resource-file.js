@@ -10,6 +10,7 @@ extend            = require 'util-ex/lib/_extend'
 isObject          = require 'util-ex/lib/is/type/object'
 isString          = require 'util-ex/lib/is/type/string'
 isArray           = require 'util-ex/lib/is/type/array'
+isFunction        = require 'util-ex/lib/is/type/function'
 defineProperty    = require 'util-ex/lib/defineProperty'
 Promise           = require 'bluebird'
 createFileObject  = require './create-file-object'
@@ -52,14 +53,19 @@ module.exports = class Resource
       result = null if result is Object::
       result
 
-  createFileObject: (aOptions)->
+  createFileObject: (aOptions, aFilter)->
     aOptions.cwd = @cwd # for ReadDirStream
     aOptions.base = @base
-    result = createFileObject @, aOptions
+    if !aFilter and @hasOwnProperty 'filter'
+      aFilter = @filter
+    if !isFunction(aFilter) or aFilter(aOptions)
+      result = createFileObject @, aOptions
+    result
 
   _assign: (aOptions, aExclude)->
     vAttrs = @getProperties()
     for k,v of aOptions
+      continue if k in ['load', 'read', 'buffer', 'text']
       continue if vAttrs[k]? or k in aExclude
       @[k] = v # assign the user's customized attributes
 
@@ -120,7 +126,11 @@ module.exports = class Resource
   convertVirtualFolder: (aContents)->
     for k in aContents
       if k.path?
-        k.base = @path
+        if @stat.isDirectory()
+          k.base = @path
+        else
+          k.base = path.dirname @path
+        k.path = path.resolve k.base, k.path
         setPrototypeOf k, @
     aContents
 
@@ -130,20 +140,24 @@ module.exports = class Resource
       return done(err) if err
       if aConfig
         that.assign aConfig, 'contents'
-        if that.isDirectory()
+        if vDir = that.isDirectory()
           if aConfig.contents #virtual folder
             that.convertVirtualFolder(aConfig.contents)
             aContents = aConfig.contents
-          if aOptions.recursive
-            aContents.forEach (f)->
-              f.loadSync aOptions if (f instanceof Resource) and f.isDirectory()
-            #aContents = aContents.filter (f)->(f instanceof Resource) and f.isDirectory()
-            # can not work!!:
-            # Promise.map aContents, (f)->
-            #   f.load aOptions
-            # .nodeify (err, result)->
-            #   done(err, aConfig)
-            # return
+      vDir ?= that.isDirectory()
+      if vDir and aOptions.recursive
+        aContents.forEach (f)->
+          # TODO: work around here.
+          f.loadSync aOptions if (f instanceof Resource) and f.isDirectory()
+        # aContents = aContents.filter (f)->(f instanceof Resource) and f.isDirectory()
+        # # can not work!!: I should use reduce.
+        # Promise.map aContents, (f)->
+        #   f.load aOptions
+        # .nodeify (err, result)->
+        #   console.log 'end', err, result
+        #   done(err, aConfig)
+        # console.log that.relative
+        # return
       done(err, aConfig)
       return
 
@@ -183,18 +197,19 @@ module.exports = class Resource
           result.skipSize = vFrontConf.skipSize
     else
       result = loadCfgFolder aOptions.path, aOptions
-    if result
-      @assign result, 'contents'
+    if result # has a config
+      @assign result, 'contents' #assign the config to itself except the 'contents'
       @$cfgPath = result.$cfgPath if result.$cfgPath
-      if @isDirectory()
+      if vIsDir = @isDirectory()
         if result.contents #virtual folder
           @convertVirtualFolder(result.contents)
           aContents = result.contents
-        if aOptions.recursive
-          # TODO: it must be loaded first if the file treat as virtual folder.
-          aContents.forEach (f)->
-            if (f instanceof Resource) and f.isDirectory()
-              f.loadSync aOptions if result
+    vIsDir ?= @isDirectory()
+    if vIsDir and aOptions.recursive
+      # TODO: it must be loaded first if the file treat as virtual folder.
+      aContents.forEach (f)->
+        if (f instanceof Resource) and f.isDirectory()
+          f.loadSync aOptions
     result
 
   _getBufferSync: (aFile)->
@@ -205,7 +220,7 @@ module.exports = class Resource
       if conf.$cfgPath
         if @isDirectory()
           result = result.filter (f)->f.path isnt conf.$cfgPath
-        else if (vDir = @parent)
+        else if (vDir = @parent) # there is a configuration file for this file.
           vDir.contents = vDir.contents.filter (f)->f.path isnt conf.$cfgPath
     result
 

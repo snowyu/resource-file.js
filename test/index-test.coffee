@@ -6,6 +6,7 @@ expect          = chai.expect
 assert          = chai.assert
 chai.use(sinonChai)
 
+setPrototypeOf  = require 'inherits-ex/lib/setPrototypeOf'
 loadCfgFile     = require 'load-config-file'
 loadCfgFolder   = require 'load-config-folder'
 yaml            = require 'gray-matter/lib/js-yaml'
@@ -16,6 +17,17 @@ Resource        = require '../src'
 
 setImmediate    = setImmediate || process.nextTick
 Resource.setFileSystem fs
+filterBehaviorTest = require 'custom-file/test/filter'
+path = fs.path
+
+buildTree = (aContents, result)->
+  aContents.forEach (i)->
+    if i.isDirectory()
+      result.push v = {}
+      v[i.inspect()] = buildTree i.contents, []
+    else
+      result.push i.inspect()
+  result
 
 describe 'ResourceFile', ->
   loadCfgFile.register 'yml', yaml.safeLoad
@@ -33,6 +45,7 @@ describe 'ResourceFile', ->
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', '_config'
+      res.contents.should.have.length 5
     it 'should load a resource file', ->
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res
@@ -47,14 +60,29 @@ describe 'ResourceFile', ->
       res.contents.should.have.length 5
       res.contents[2].getContentSync()
       res.contents.should.have.length 4
-      result = []
-      res.contents.forEach (i)->result.push i.inspect()
+      result = buildTree(res.contents, [])
       result.should.be.deep.equal [
         '<File? "fixture/file0.md">'
-        '<Folder "fixture/folder">'
+        '<Folder "fixture/folder">': [
+          '<File? "fixture/folder/file10.md">'
+          '<Folder "fixture/folder/folder1">': []
+        ,
+          '<Folder "fixture/folder/folder2">': [
+            '<File? "fixture/folder/folder2/test.md">'
+          ]
+          '<File? "fixture/folder/vfolder1.md">'
+        ]
         '<File "fixture/unknown">'
         '<File? "fixture/vfolder.md">'
       ]
+    it 'should load a resource virtual folder', ->
+      res = Resource 'vfolder.md', cwd: __dirname, base: 'fixture', load:true,read:true
+      should.exist res, 'res'
+      res.isDirectory().should.be.true
+      should.exist res.contents, 'res.contents'
+      result = buildTree(res.contents, [])
+      result.should.be.deep.equal ['<File? "file0.md">']
+
   describe '#load', ->
     it 'should load a resource folder', (done)->
       res = Resource 'fixture', cwd: __dirname
@@ -70,6 +98,18 @@ describe 'ResourceFile', ->
         return done(err) if err
         res.should.have.property 'config', 'file0'
         done()
+    it 'should load a resource file with a configuration file', (done)->
+      res = Resource '.', cwd: __dirname, base:'fixture', load:true,read:true
+      expect(res).be.exist
+      should.exist res.contents, 'res.contents'
+      for file in res.contents
+        break if file.relative is 'unknown'
+      expect(file).have.property 'relative', 'unknown'
+      expect(file.parent).be.equal res
+      file.load read:true, (err, result)->
+        return done(err) if err
+        file.should.have.property 'config', 'unknown'
+        done()
     it 'should load a resource folder recursively', (done)->
       res = Resource 'fixture', cwd: __dirname
       should.exist res
@@ -78,14 +118,67 @@ describe 'ResourceFile', ->
         should.exist contents
         res.should.have.property 'config', '_config'
         contents.should.have.length 5
-        res.contents[2].getContentSync()
-        res.contents.should.have.length 4
-        result = []
-        res.contents.forEach (i)->result.push i.inspect()
-        result.should.be.deep.equal [
-          '<File? "fixture/file0.md">'
-          '<Folder "fixture/folder">'
-          '<File "fixture/unknown">'
-          '<File? "fixture/vfolder.md">'
-        ]
-        done()
+        # the "unknown" file
+        res.contents[2].getContent (err)->
+          res.contents.should.have.length 4
+          result = buildTree(res.contents, [])
+          result.should.be.deep.equal [
+            '<File? "fixture/file0.md">'
+            '<Folder "fixture/folder">': [
+              '<File? "fixture/folder/file10.md">'
+              '<Folder "fixture/folder/folder1">': []
+            ,
+              '<Folder "fixture/folder/folder2">': [
+                '<File? "fixture/folder/folder2/test.md">'
+              ]
+              '<File? "fixture/folder/vfolder1.md">'
+            ]
+            '<File "fixture/unknown">'
+            '<File? "fixture/vfolder.md">'
+          ]
+          done()
+    it 'should load a resource virtual folder', (done)->
+      res = Resource 'vfolder.md', cwd: __dirname, base: 'fixture'
+      should.exist res, 'res'
+      res.load read:true, (err, result)->
+        unless err
+          res.isDirectory().should.be.true
+          should.exist res.contents, 'res.contents'
+          result = buildTree(result, [])
+          result.should.be.deep.equal ['<File? "file0.md">']
+        done(err)
+
+  describe '#toObject', ->
+    it 'should convert a resource to a plain object', ->
+      res = Resource 'fixture', cwd: __dirname
+      should.exist res
+      result = res.toObject()
+      result.should.be.deep.equal
+        cwd: __dirname
+        base: __dirname
+        path: path.join __dirname, 'fixture'
+      f = {}
+      setPrototypeOf f, res
+      res.loadSync(read:true)
+      result = res.toObject()
+      result.should.have.ownProperty 'stat'
+      result.should.have.ownProperty 'contents'
+      result = f.toObject()
+      result.should.not.have.ownProperty 'stat'
+      result.should.not.have.ownProperty 'contents'
+    it 'should convert a resource to a plain object and exclude', ->
+      res = Resource 'fixture', cwd: __dirname
+      should.exist res
+      result = res.toObject(null, 'base')
+      result.should.be.deep.equal
+        cwd: __dirname
+        path: path.join __dirname, 'fixture'
+      result = res.toObject(null, ['base', 'path'])
+      result.should.be.deep.equal
+        cwd: __dirname
+
+  describe '#filter', filterBehaviorTest Resource,
+    {path:path.join(__dirname, 'fixture/folder'), base: __dirname},
+    (file)->
+      path.basename(file.path) is 'file10.md'
+    ,['fixture/folder/file10.md']
