@@ -35,7 +35,7 @@
   ],
   "dependencies": {
     "bluebird": "^2.9.34",
-    "custom-file": "^0.4.3",
+    "custom-file": "^0.5.3",
     "front-matter-markdown": "^0.3.3",
     "gray-matter": "^2.0.1",
     "inherits-ex": "^1.1.3",
