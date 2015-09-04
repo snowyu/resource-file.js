@@ -57,7 +57,7 @@ describe 'ResourceFile', ->
       res.loadSync(read:true, recursive:true)
       should.exist res.contents
       res.should.have.property 'config', '_config'
-      res.contents.should.have.length 5
+      res.contents.should.have.length 5 # the unknown file is not loaded.
       res.contents[2].getContentSync()
       res.contents.should.have.length 4
       result = buildTree(res.contents, [])
@@ -82,6 +82,23 @@ describe 'ResourceFile', ->
       should.exist res.contents, 'res.contents'
       result = buildTree(res.contents, [])
       result.should.be.deep.equal ['<File? "file0.md">']
+    it 'should inherit the parent\'s config', ->
+      res = Resource 'fixture', cwd: __dirname
+      should.exist res
+      res.loadSync(read:true)
+      res.should.have.property 'config', '_config'
+      res.contents.should.have.length 5
+      res.contents[0].getContentSync()
+      res.should.have.ownProperty 'superLst'
+      res.should.have.ownProperty 'superObj'
+      res.superLst.should.be.deep.equal ['as', 'it']
+      res.superObj.should.be.deep.equal key1:'hi', key2:'world'
+      res = res.contents[0]
+      res.should.have.ownProperty 'superLst'
+      res.should.have.ownProperty 'superObj'
+      res.superLst.should.be.deep.equal ['add1','add2','as', 'it']
+      res.superObj.should.be.deep.equal key1:'HI', key2:'world', key3:'append'
+
 
   describe '#load', ->
     it 'should load a resource folder', (done)->

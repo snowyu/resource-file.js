@@ -66,6 +66,15 @@ module.exports = class Resource
     for k,v of aOptions
       continue if k in ['load', 'read', 'buffer', 'text']
       continue if vAttrs[k]? or k in aExclude
+      if (isObject(v) and isObject v['<']) # inherits from parent
+        v = v['<']
+        if isArray @[k]
+          if isArray v
+            v = v.concat @[k]
+          else
+            v = @[k].concat v
+        else if isObject @[k]
+          v = extend {}, @[k], v
       @[k] = v # assign the user's customized attributes
 
   _updateFS: (aFS)->

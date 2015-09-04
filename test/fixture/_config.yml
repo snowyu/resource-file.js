@@ -1,2 +1,8 @@
 config: _config
 rootCfg: true
+superLst:
+  - as
+  - it
+superObj:
+  key1: hi
+  key2: world
