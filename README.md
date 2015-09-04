@@ -61,6 +61,26 @@ The Resource File Class inherited from
 [AdvanceFile][AdvanceFile]
 
 
+## Changes
+
+### v0.3
+
++ inherits the parent's configuration: the '<' key means inherits from parent.
+  * list: concat the parent's list
+  * object: extent the parent's object
+  * eg,
+
+    ---
+    superLst:
+      <: #inherits from parent
+        - add1
+        - add2
+    superObj:
+      <: #inherits from parent
+        key1: HI
+        key3: append
+    ---
+
 ## TODO
 
 + Stream supports.
