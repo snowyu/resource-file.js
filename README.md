@@ -70,6 +70,7 @@ The Resource File Class inherited from
   * object: extent the parent's object
   * eg,
 
+    ```
     ---
     superLst:
       <: #inherits from parent
@@ -80,6 +81,7 @@ The Resource File Class inherited from
         key1: HI
         key3: append
     ---
+    ```
 
 ## TODO
 
