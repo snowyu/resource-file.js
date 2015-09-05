@@ -26,7 +26,10 @@ markdownExts = [
 
 module.exports = class Resource
   inherits Resource, File
-  @setFileSystem: CustomFile.setFileSystem
+  @setFileSystem: (value)->
+    CustomFile.setFileSystem(value)
+    Resource::_updateFS()
+    Resource
 
   # filled by _updateFS:
   fs = null
@@ -77,10 +80,12 @@ module.exports = class Resource
           v = extend {}, @[k], v
       @[k] = v # assign the user's customized attributes
 
-  _updateFS: (aFS)->
+  _updateFS: (aFS)-> #TODO: remove the ugly _updateFS.
     super aFS
-    fs = @fs unless fs
-    path = fs.path if fs and !path
+    fs = @fs if fs != @fs or !fs
+    if fs
+      loadCfgFolder.setFileSystem fs
+      path = fs.path unless path
     return
 
   # TODO: howto validate a virtual file?

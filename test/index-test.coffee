@@ -11,6 +11,7 @@ loadCfgFile     = require 'load-config-file'
 loadCfgFolder   = require 'load-config-folder'
 yaml            = require 'gray-matter/lib/js-yaml'
 fmatterMarkdown = require 'front-matter-markdown'
+extend          = require 'util-ex/lib/_extend'
 fs              = require 'fs'
 fs.cwd          = process.cwd
 Resource        = require '../src'
@@ -35,6 +36,12 @@ describe 'ResourceFile', ->
   loadCfgFolder.register 'md', fmatterMarkdown
   loadCfgFolder.addConfig ['_config', 'index', 'README']
 
+  it 'should setFileSystem to load-config-file and load-config-folder', ->
+    fakeFS = extend {}, fs
+    Resource.setFileSystem fakeFS
+    expect(loadCfgFile::fs).to.be.equal fakeFS
+    expect(loadCfgFolder::fs).to.be.equal fakeFS
+    Resource.setFileSystem fs
   it 'should get a resource', ->
     res = Resource 'fixture', cwd: __dirname
     should.exist res
