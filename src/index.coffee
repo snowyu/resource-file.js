@@ -1,3 +1,4 @@
+fileNameSensitive = require 'fs-file-name-sensitive'
 CustomFile        = require 'custom-file'
 File              = require 'custom-file/lib/advance'
 inherits          = require 'inherits-ex/lib/inherits'
@@ -230,15 +231,25 @@ module.exports = class Resource
     conf = @loadConfigSync aFile, result
     if conf
       result = conf.contents if conf.contents
-      if conf.$cfgPath
+      if conf.$cfgPath #TODO: need to support the case-insensitve file name
+        vIsFileNameInsensitive = !fileNameSensitive @cwd
+        vCfgPath = conf.$cfgPath
+        vCfgPath = vCfgPath.toLowerCase() if vIsFileNameInsensitive
         if @isDirectory()
-          result = result.filter (f)->f.path isnt conf.$cfgPath
+          result = result.filter (f)->
+            vPath = f.path
+            vPath = vPath.toLowerCase() if vIsFileNameInsensitive
+            vPath isnt vCfgPath
         else if (vDir = @parent) # there is a configuration file for this file.
-          vDir.contents = vDir.contents.filter (f)->f.path isnt conf.$cfgPath
+          vDir.contents = vDir.contents.filter (f)->
+            vPath = f.path
+            vPath = vPath.toLowerCase() if vIsFileNameInsensitive
+            vPath isnt vCfgPath
     result
 
   _getBuffer: (aFile, done)->
     that = @
+    vIsFileNameInsensitive = !fileNameSensitive that.cwd
     super aFile, (err, result)->
       return done(err) if err
       that.loadConfig aFile, result, (err, conf)->
@@ -246,9 +257,17 @@ module.exports = class Resource
         if conf
           #extend that, conf
           result = conf.contents if conf.contents
-          if conf.$cfgPath
+          if conf.$cfgPath #TODO: need to support the case-insensitve file name
+            vCfgPath = conf.$cfgPath
+            vCfgPath = vCfgPath.toLowerCase() if vIsFileNameInsensitive
             if that.isDirectory()
-              result = result.filter (f)->f.path isnt conf.$cfgPath
+              result = result.filter (f)->
+                vPath = f.path
+                vPath = vPath.toLowerCase() if vIsFileNameInsensitive
+                vPath isnt vCfgPath
             else if (vDir = that.parent)
-              vDir.contents = vDir.contents.filter (f)->f.path isnt conf.$cfgPath
+              vDir.contents = vDir.contents.filter (f)->
+                vPath = f.path
+                vPath = vPath.toLowerCase() if vIsFileNameInsensitive
+                vPath isnt vCfgPath
         done(err, result)

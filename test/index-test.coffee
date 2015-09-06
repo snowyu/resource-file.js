@@ -34,7 +34,7 @@ describe 'ResourceFile', ->
   loadCfgFile.register 'yml', yaml.safeLoad
   loadCfgFolder.register 'yml', yaml.safeLoad
   loadCfgFolder.register 'md', fmatterMarkdown
-  loadCfgFolder.addConfig ['_config', 'index', 'README']
+  loadCfgFolder.addConfig ['_config', 'INDEX', 'index', 'README']
 
   it 'should setFileSystem to load-config-file and load-config-folder', ->
     fakeFS = extend {}, fs
