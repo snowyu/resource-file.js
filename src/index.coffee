@@ -187,10 +187,10 @@ module.exports = class Resource
           #aOptions.skipSize = vFrontConf.skipSize
           if result.contents
             # do not enable the skipSize, but remember the position.
-            result.skipSize = -vFrontConf.skipSize
+            aOptions.skipSize = -vFrontConf.skipSize
           else
             #result.contents = vFrontConf.content
-            result.skipSize = vFrontConf.skipSize
+            aOptions.skipSize = vFrontConf.skipSize
         processCfg(err, result)
     else
       loadCfgFolder aOptions.path, aOptions, processCfg
@@ -205,10 +205,10 @@ module.exports = class Resource
       if vFrontConf and vFrontConf.skipSize
         result = extend result, vFrontConf
         if result.contents
-          result.skipSize = -vFrontConf.skipSize
+          aOptions.skipSize = -vFrontConf.skipSize
         else
           #result.contents = vFrontConf.content
-          result.skipSize = vFrontConf.skipSize
+          aOptions.skipSize = vFrontConf.skipSize
     else
       result = loadCfgFolder aOptions.path, aOptions
     if result # has a config

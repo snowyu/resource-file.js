@@ -105,6 +105,12 @@ describe 'ResourceFile', ->
       res.should.have.ownProperty 'superObj'
       res.superLst.should.be.deep.equal ['add1','add2','as', 'it']
       res.superObj.should.be.deep.equal key1:'HI', key2:'world', key3:'append'
+    it 'should load a resource file with getContent', ->
+      res = Resource 'fixture/file0.md', cwd: __dirname
+      should.exist res
+      result = res.getContentSync()
+      res.should.have.property 'config', 'file0'
+      expect(res.skipSize).to.be.at.least 104
 
 
   describe '#load', ->
@@ -171,6 +177,14 @@ describe 'ResourceFile', ->
           result = buildTree(result, [])
           result.should.be.deep.equal ['<File? "file0.md">']
         done(err)
+    it 'should load a resource file with getContent', (done)->
+      res = Resource 'fixture/file0.md', cwd: __dirname
+      should.exist res
+      res.getContent (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', 'file0'
+        expect(res.skipSize).to.be.at.least 104
+        done()
 
   describe '#toObject', ->
     it 'should convert a resource to a plain object', ->
