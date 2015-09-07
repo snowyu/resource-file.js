@@ -23,7 +23,7 @@ path = fs.path
 
 buildTree = (aContents, result)->
   aContents.forEach (i)->
-    if i.isDirectory()
+    if i.isDirectory() and i.contents
       result.push v = {}
       v[i.inspect()] = buildTree i.contents, []
     else
