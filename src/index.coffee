@@ -95,10 +95,8 @@ module.exports = class Resource
   #_validate: (file)-> file.hasOwnProperty('contents') and file.contents?
   inspect: ->
     name = 'File'
-    if @loaded()
-      name = 'Folder' if @isDirectory()
-    else
-      name += '?'
+    name = 'Folder' if @isDirectory()
+    name += '?' unless @loaded()
     '<'+ name + ' ' + @_inspect() + '>'
 
   isDirectory: ->
