@@ -66,6 +66,8 @@ The Resource File Class inherited from
 ### v0.3
 
 + inherits the parent's configuration: the '<' key means inherits from parent.
+  * number: add the parent's number
+  * string: a the parent's string + this stirng.
   * list: concat the parent's list
   * object: extent the parent's object
   * eg,

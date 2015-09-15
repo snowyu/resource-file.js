@@ -98,13 +98,21 @@ describe 'ResourceFile', ->
       res.contents[0].getContentSync()
       res.should.have.ownProperty 'superLst'
       res.should.have.ownProperty 'superObj'
+      res.should.have.ownProperty 'superStr'
+      res.should.have.ownProperty 'superNum'
       res.superLst.should.be.deep.equal ['as', 'it']
       res.superObj.should.be.deep.equal key1:'hi', key2:'world'
+      res.superStr.should.be.equal 'hi'
+      res.superNum.should.be.equal 123
       res = res.contents[0]
       res.should.have.ownProperty 'superLst'
       res.should.have.ownProperty 'superObj'
+      res.should.have.ownProperty 'superStr'
+      res.should.have.ownProperty 'superNum'
       res.superLst.should.be.deep.equal ['add1','add2','as', 'it']
       res.superObj.should.be.deep.equal key1:'HI', key2:'world', key3:'append'
+      res.superStr.should.be.equal 'hi world'
+      res.superNum.should.be.equal 126
     it 'should load a resource file with getContent', ->
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res

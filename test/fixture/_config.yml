@@ -6,3 +6,5 @@ superLst:
 superObj:
   key1: hi
   key2: world
+superStr: 'hi'
+superNum: 123

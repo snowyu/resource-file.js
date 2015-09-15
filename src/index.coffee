@@ -11,6 +11,7 @@ extend            = require 'util-ex/lib/_extend'
 isObject          = require 'util-ex/lib/is/type/object'
 isString          = require 'util-ex/lib/is/type/string'
 isArray           = require 'util-ex/lib/is/type/array'
+isNumber          = require 'util-ex/lib/is/type/number'
 isFunction        = require 'util-ex/lib/is/type/function'
 defineProperty    = require 'util-ex/lib/defineProperty'
 Promise           = require 'bluebird'
@@ -70,15 +71,18 @@ module.exports = class Resource
     for k,v of aOptions
       continue if k in ['load', 'read', 'buffer', 'text']
       continue if vAttrs[k]? or k in aExclude
-      if (isObject(v) and isObject v['<']) # inherits from parent
+      if (isObject(v) and v['<']?) # inherits from parent
         v = v['<']
-        if isArray @[k]
+        vParentValue = @[k]
+        if isString(vParentValue) or isNumber(vParentValue)
+          v = vParentValue + v if isString(v) or isNumber(vParentValue)
+        else if isArray vParentValue
           if isArray v
-            v = v.concat @[k]
+            v = v.concat vParentValue
           else
             v = @[k].concat v
-        else if isObject @[k]
-          v = extend {}, @[k], v
+        else if isObject vParentValue
+          v = extend {}, vParentValue, v
       @[k] = v # assign the user's customized attributes
 
   _updateFS: (aFS)-> #TODO: remove the ugly _updateFS.
@@ -134,6 +138,12 @@ module.exports = class Resource
       result = matter(aText.toString(), aOptions)
       # TODO:whether export the non-enumerable $compiled attribute?
     result
+
+  setContents: (aContents)->
+    vCfg = @frontMatter(aContents)
+    #TODO: update virtual folders too.
+    @assign vCfg, 'contents' if vCfg
+    super(aContents)
 
   convertVirtualFolder: (aContents)->
     for k in aContents
@@ -229,7 +239,7 @@ module.exports = class Resource
     conf = @loadConfigSync aFile, result
     if conf
       result = conf.contents if conf.contents
-      if conf.$cfgPath #TODO: need to support the case-insensitve file name
+      if conf.$cfgPath
         vIsFileNameInsensitive = !fileNameSensitive @cwd
         vCfgPath = conf.$cfgPath
         vCfgPath = vCfgPath.toLowerCase() if vIsFileNameInsensitive
@@ -255,10 +265,12 @@ module.exports = class Resource
         if conf
           #extend that, conf
           result = conf.contents if conf.contents
-          if conf.$cfgPath #TODO: need to support the case-insensitve file name
+          if conf.$cfgPath
             vCfgPath = conf.$cfgPath
             vCfgPath = vCfgPath.toLowerCase() if vIsFileNameInsensitive
             if that.isDirectory()
+              # TODO: whether hide the folder configuration file?
+              # maybe need to process this file for folder.
               result = result.filter (f)->
                 vPath = f.path
                 vPath = vPath.toLowerCase() if vIsFileNameInsensitive

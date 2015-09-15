@@ -8,6 +8,10 @@ superObj:
   <:
     key1: HI
     key3: append
+superStr:
+  <: ' world'
+superNum:
+  <: 3
 ---
 
 this file0.
