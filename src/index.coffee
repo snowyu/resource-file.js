@@ -61,9 +61,9 @@ module.exports = class Resource
   createFileObject: (aOptions, aFilter)->
     aOptions.cwd = @cwd # for ReadDirStream
     aOptions.base = @base
-    aFilter ?= @filter #if !aFilter and @hasOwnProperty 'filter'
-    if !isFunction(aFilter) or aFilter.call(@, aOptions)
-      result = createFileObject @, aOptions
+    # aFilter ?= @filter #if !aFilter and @hasOwnProperty 'filter'
+    # if !isFunction(aFilter) or aFilter.call(@, aOptions)
+    result = createFileObject @, aOptions
     result
 
   _assign: (aOptions, aExclude)->
@@ -253,6 +253,10 @@ module.exports = class Resource
             vPath = f.path
             vPath = vPath.toLowerCase() if vIsFileNameInsensitive
             vPath isnt vCfgPath
+    vFilter = aFile.filter
+    if isFunction(vFilter) and @isDirectory()
+      that = this
+      result = result.filter (f)->vFilter.call(that, f)
     result
 
   _getBuffer: (aFile, done)->
@@ -280,4 +284,7 @@ module.exports = class Resource
                 vPath = f.path
                 vPath = vPath.toLowerCase() if vIsFileNameInsensitive
                 vPath isnt vCfgPath
+        vFilter = aFile.filter
+        if isFunction(vFilter) and that.isDirectory()
+          result = result.filter (f)->vFilter.call(that, f)
         done(err, result)
