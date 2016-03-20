@@ -1,7 +1,7 @@
 {
   "name": "resource-file",
   "description": "The Abstract Resource File Class. Each resource could have many custom attributes. These attributes could be a front-matter block in the same file, or as a separate configuration file exists.",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "homepage": "https://github.com/snowyu/resource-file.js",
   "repository": {
     "type": "git",
