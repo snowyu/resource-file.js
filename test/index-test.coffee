@@ -9,11 +9,12 @@ chai.use(sinonChai)
 setPrototypeOf  = require 'inherits-ex/lib/setPrototypeOf'
 loadCfgFile     = require 'load-config-file'
 loadCfgFolder   = require 'load-config-folder'
-yaml            = require 'gray-matter/lib/js-yaml'
+yaml            = require('gray-matter/lib/parsers').yaml
 fmatterMarkdown = require 'front-matter-markdown'
 extend          = require 'util-ex/lib/_extend'
 fs              = require 'fs'
 fs.cwd          = process.cwd
+fs.path         = require 'path.js'
 Resource        = require '../src'
 
 setImmediate    = setImmediate || process.nextTick
@@ -31,8 +32,8 @@ buildTree = (aContents, result)->
   result
 
 describe 'ResourceFile', ->
-  loadCfgFile.register 'yml', yaml.safeLoad
-  loadCfgFolder.register 'yml', yaml.safeLoad
+  loadCfgFile.register 'yml', yaml
+  loadCfgFolder.register 'yml', yaml
   loadCfgFolder.register 'md', fmatterMarkdown
   loadCfgFolder.addConfig ['_config', 'INDEX', 'index', 'README']
 
@@ -68,7 +69,7 @@ describe 'ResourceFile', ->
       res.contents[2].getContentSync()
       res.contents.should.have.length 4
       result = buildTree(res.contents, [])
-      result.should.be.deep.equal [
+      expected = [
         '<File? "fixture/file0.md">'
         '<Folder "fixture/folder">': [
           '<File? "fixture/folder/file10.md">'
@@ -82,6 +83,22 @@ describe 'ResourceFile', ->
         '<File "fixture/unknown">'
         '<File? "fixture/vfolder.md">'
       ]
+      if path.isWindows
+        expected = [
+          '<File? "fixture\\file0.md">'
+          '<Folder "fixture\\folder">': [
+            '<File? "fixture\\folder\\file10.md">'
+            '<Folder "fixture\\folder\\folder1">': []
+          ,
+            '<Folder "fixture\\folder\\folder2">': [
+              '<File? "fixture\\folder\\folder2\\test.md">'
+            ]
+            '<File? "fixture\\folder\\vfolder1.md">'
+          ]
+          '<File "fixture\\unknown">'
+          '<File? "fixture\\vfolder.md">'
+        ]
+      result.should.be.deep.equal expected
     it 'should load a resource virtual folder', ->
       res = Resource 'vfolder.md', cwd: __dirname, base: 'fixture', load:true,read:true
       should.exist res, 'res'
@@ -160,7 +177,7 @@ describe 'ResourceFile', ->
         res.contents[2].getContent (err)->
           res.contents.should.have.length 4
           result = buildTree(res.contents, [])
-          result.should.be.deep.equal [
+          expected = [
             '<File? "fixture/file0.md">'
             '<Folder "fixture/folder">': [
               '<File? "fixture/folder/file10.md">'
@@ -174,6 +191,22 @@ describe 'ResourceFile', ->
             '<File "fixture/unknown">'
             '<File? "fixture/vfolder.md">'
           ]
+          if path.isWindows
+            expected = [
+              '<File? "fixture\\file0.md">'
+              '<Folder "fixture\\folder">': [
+                '<File? "fixture\\folder\\file10.md">'
+                '<Folder "fixture\\folder\\folder1">': []
+              ,
+                '<Folder "fixture\\folder\\folder2">': [
+                  '<File? "fixture\\folder\\folder2\\test.md">'
+                ]
+                '<File? "fixture\\folder\\vfolder1.md">'
+              ]
+              '<File "fixture\\unknown">'
+              '<File? "fixture\\vfolder.md">'
+            ]
+          result.should.be.deep.equal expected
           done()
     it 'should load a resource virtual folder', (done)->
       res = Resource 'vfolder.md', cwd: __dirname, base: 'fixture'
