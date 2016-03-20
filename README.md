@@ -42,7 +42,7 @@ The folder's configuration file names need to be registered too.
 ```coffee
 loadCfgFile     = require 'load-config-file'
 loadCfgFolder   = require 'load-config-folder'
-yaml            = require 'gray-matter/lib/js-yaml'
+yaml            = require 'js-yaml'
 
 loadCfgFile.register 'yml', yaml.safeLoad
 loadCfgFolder.register 'yml', yaml.safeLoad
