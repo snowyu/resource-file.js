@@ -1,3 +1,4 @@
+titleCase         = require 'title-case'
 fileNameSensitive = require 'fs-file-name-sensitive'
 CustomFile        = require 'custom-file'
 File              = require 'custom-file/lib/advance'
@@ -13,11 +14,20 @@ isString          = require 'util-ex/lib/is/type/string'
 isArray           = require 'util-ex/lib/is/type/array'
 isNumber          = require 'util-ex/lib/is/type/number'
 isFunction        = require 'util-ex/lib/is/type/function'
+isDate            = require 'util-ex/lib/is/type/date'
 defineProperty    = require 'util-ex/lib/defineProperty'
 Promise           = require 'bluebird'
 createFileObject  = require './create-file-object'
 setImmediate  = setImmediate || process.nextTick
 Promise.promisifyAll File, filter:(name,fn)->name in ['load']
+
+# Convert a string to a title string.
+toTitleStr        = (aString) ->
+  if isString aString
+    i = aString.indexOf('.') # remove the extname if exists and it's not the first char.
+    aString = aString.slice(0, i-aString.length) if i > 0
+    aString = titleCase aString
+  aString
 
 markdownExts = [
   '.txt'
@@ -47,9 +57,19 @@ module.exports = class Resource
   matter.setOptionAlias 'heading', ['dirHeading', 'dirHeadings']
   matter.setOptionAlias 'headingsAsToc', 'headingsAsToc'
   File.defineProperties Resource, extend
+    title:
+      type: 'String'
+      alias: ['Title']
     isDir:
       type: 'Boolean'
       alias: ['isDirectory']
+    date:
+      type: 'Date'
+      alias: ['Date', 'UpdatedDate', 'updatedDate', 'modifiedDate', 'ModifiedDate']
+      assigned: '_date' # smart assign with the internal attribute(non-enum).
+      assign: (value)->
+        value = new Date(value) unless isDate(value)
+        value
   , File::$attributes
 
   defineProperty @::, 'parent', undefined,
@@ -156,6 +176,20 @@ module.exports = class Resource
         setPrototypeOf k, @
     aContents
 
+  # get the latest modified date of the file from Stat.
+  getDate: (aStat)->aStat.mtime
+  setFileAttrs: (aOptions, aStat)->
+    @date = @getDate aStat
+    @title = toTitleStr path.basename(aOptions.path)
+    return
+  _loadStat: (aOptions, done)->
+    super aOptions, (err, result)=>
+      @setFileAttrs aOptions, result
+      done(err, result)
+  _loadStatSync: (aOptions)->
+    result = super aOptions
+    @setFileAttrs aOptions, result
+    result
   loadConfig: (aOptions, aContents, done)->
     that = @
     processCfg = (err, aConfig)->

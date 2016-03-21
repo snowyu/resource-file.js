@@ -54,11 +54,15 @@ describe 'ResourceFile', ->
       res.loadSync(read:true)
       res.should.have.property 'config', '_config'
       res.contents.should.have.length 5
+      expect(res.date).to.be.an.instanceOf Date
+      expect(res.title).to.be.equal 'Fixture'
     it 'should load a resource file', ->
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', 'file0'
+      expect(res.date).to.be.an.instanceOf Date
+      expect(res.title).to.be.equal 'File 0'
     it 'should load a resource folder recursively', ->
       res = Resource 'fixture', cwd: __dirname
       should.exist res
@@ -68,6 +72,8 @@ describe 'ResourceFile', ->
       res.contents.should.have.length 5 # the unknown file is not loaded.
       res.contents[2].getContentSync()
       res.contents.should.have.length 4
+      expect(res.date).to.be.an.instanceOf Date
+      expect(res.title).to.be.equal 'Fixture'
       result = buildTree(res.contents, [])
       expected = [
         '<File? "fixture/file0.md">'
@@ -104,7 +110,11 @@ describe 'ResourceFile', ->
       should.exist res, 'res'
       res.isDirectory().should.be.true
       should.exist res.contents, 'res.contents'
-      result = buildTree(res.contents, [])
+      expect(res.date).to.be.deep.equal new Date('2011-01-11T11:11:00Z')
+      expect(res.title).to.be.equal 'Virtual Folder'
+      result = res.contents
+      expect(result[0].title).to.be.equal 'File Zero'
+      result = buildTree(result, [])
       result.should.be.deep.equal ['<File? "file0.md">']
     it 'should inherit the parent\'s config', ->
       res = Resource 'fixture', cwd: __dirname
@@ -145,6 +155,8 @@ describe 'ResourceFile', ->
       res.load read:true, (err, result)->
         return done(err) if err
         res.should.have.property 'config', '_config'
+        expect(res.date).to.be.an.instanceOf Date
+        expect(res.title).to.be.equal 'Fixture'
         done()
     it 'should load a resource file', (done)->
       res = Resource 'fixture/file0.md', cwd: __dirname
@@ -152,6 +164,8 @@ describe 'ResourceFile', ->
       res.load read:true, (err, result)->
         return done(err) if err
         res.should.have.property 'config', 'file0'
+        expect(res.date).to.be.an.instanceOf Date
+        expect(res.title).to.be.equal 'File 0'
         done()
     it 'should load a resource file with a configuration file', (done)->
       res = Resource '.', cwd: __dirname, base:'fixture', load:true,read:true
@@ -215,6 +229,9 @@ describe 'ResourceFile', ->
         unless err
           res.isDirectory().should.be.true
           should.exist res.contents, 'res.contents'
+          expect(res.date).to.be.deep.equal new Date('2011-01-11T11:11:00Z')
+          expect(res.title).to.be.equal 'Virtual Folder'
+          expect(result[0].title).to.be.equal 'File Zero'
           result = buildTree(result, [])
           result.should.be.deep.equal ['<File? "file0.md">']
         done(err)

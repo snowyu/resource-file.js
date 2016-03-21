@@ -51,8 +51,9 @@ loadCfgFolder.addConfig '_config'
 res = Resource './test/fixture'
 res.loadSync(read:true)
 res.should.have.property 'config', '_config'
-
-res = resouce './test/'
+res.contents.should.have.length 5
+expect(res.date).to.be.an.instanceOf Date
+expect(res.title).to.be.equal 'Fixture'
 ```
 
 ## API
@@ -62,6 +63,14 @@ The Resource File Class inherited from
 
 
 ## Changes
+
+### v0.4
+
+* the filter should run after loading config.
+* can work on windows
++ add the `title`, `date` attributes to the Resource (v0.4.2)
+  * `title` *String*: remove extension name of the file name, and convert it to a title strirng.
+  * `date`(`modifiedDate`, `updatedDate`) *Date* : the latest modified date of the file/folder.
 
 ### v0.3
 
