@@ -71,6 +71,7 @@ The Resource File Class inherited from
 + add the `title`, `date` attributes to the Resource (v0.4.2)
   * `title` *String*: remove extension name of the file name, and convert it to a title strirng.
   * `date`(`modifiedDate`, `updatedDate`) *Date* : the latest modified date of the file/folder.
+  * Note: you can set these value before loading stat.
 
 ### v0.3
 
