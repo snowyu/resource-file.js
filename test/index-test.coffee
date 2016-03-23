@@ -63,6 +63,17 @@ describe 'ResourceFile', ->
       res.should.have.property 'config', 'file0'
       expect(res.date).to.be.an.instanceOf Date
       expect(res.title).to.be.equal 'File 0'
+    it 'should not get title and date from a resource file if property exists', ->
+      res = Resource 'fixture/file0.md', cwd: __dirname
+      should.exist res
+      vDate = new Date()
+      vTtile = 'Custom title'
+      res.title = vTtile
+      res.date = vDate
+      res.loadSync(read:true)
+      res.should.have.property 'config', 'file0'
+      expect(res.date).to.be.deep.equals vDate
+      expect(res.title).to.be.equal vTtile
     it 'should load a resource folder recursively', ->
       res = Resource 'fixture', cwd: __dirname
       should.exist res
@@ -166,6 +177,19 @@ describe 'ResourceFile', ->
         res.should.have.property 'config', 'file0'
         expect(res.date).to.be.an.instanceOf Date
         expect(res.title).to.be.equal 'File 0'
+        done()
+    it 'should not get title and date from a resource file if property exists', (done)->
+      res = Resource 'fixture/file0.md', cwd: __dirname
+      should.exist res
+      vDate = new Date()
+      vTtile = 'Custom title'
+      res.title = vTtile
+      res.date = vDate
+      res.load read:true, (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', 'file0'
+        expect(res.date).to.be.deep.equals vDate
+        expect(res.title).to.be.equal vTtile
         done()
     it 'should load a resource file with a configuration file', (done)->
       res = Resource '.', cwd: __dirname, base:'fixture', load:true,read:true

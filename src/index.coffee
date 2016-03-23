@@ -179,8 +179,8 @@ module.exports = class Resource
   # get the latest modified date of the file from Stat.
   getDate: (aStat)->aStat.mtime
   setFileAttrs: (aOptions, aStat)->
-    @date = @getDate aStat
-    @title = toTitleStr path.basename(aOptions.path)
+    @date = @getDate aStat unless @hasOwnProperty('date') and isDate @date
+    @title = toTitleStr path.basename(aOptions.path) unless @hasOwnProperty('title') and @title
     return
   _loadStat: (aOptions, done)->
     super aOptions, (err, result)=>
