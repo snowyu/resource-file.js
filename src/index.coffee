@@ -70,6 +70,8 @@ module.exports = class Resource
       assign: (value)->
         value = new Date(value) unless isDate(value)
         value
+    summary:
+      type: 'String'
   , File::$attributes
 
   defineProperty @::, 'parent', undefined,
@@ -196,6 +198,8 @@ module.exports = class Resource
       return done(err) if err
       if aConfig
         that.assign aConfig, 'contents'
+        # aConfig.content: the markdown string removing the config.
+        that.summary = aConfig.content if aConfig.content and !aConfig.summary
         if vDir = that.isDirectory()
           if aConfig.contents #virtual folder
             that.convertVirtualFolder(aConfig.contents)
@@ -257,6 +261,7 @@ module.exports = class Resource
       @assign result, 'contents' #assign the config to itself except the 'contents'
       @$cfgPath = result.$cfgPath if result.$cfgPath
       if vIsDir = @isDirectory()
+        @summary = result.content if result.content and !result.summary
         if result.contents #virtual folder
           @convertVirtualFolder(result.contents)
           aContents = result.contents

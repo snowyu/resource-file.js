@@ -56,6 +56,15 @@ describe 'ResourceFile', ->
       res.contents.should.have.length 5
       expect(res.date).to.be.an.instanceOf Date
       expect(res.title).to.be.equal 'Fixture'
+    it 'should load a resource folder with summary', ->
+      res = Resource 'fixture/folder', cwd: __dirname
+      should.exist res
+      res.loadSync(read:true)
+      res.should.have.property 'config', 'README'
+      res.contents.should.have.length 4
+      expect(res.summary).to.be.equal '\nthis is README.'
+      expect(res.date).to.be.an.instanceOf Date
+      expect(res.title).to.be.equal 'Folder'
     it 'should load a resource file', ->
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res
@@ -168,6 +177,17 @@ describe 'ResourceFile', ->
         res.should.have.property 'config', '_config'
         expect(res.date).to.be.an.instanceOf Date
         expect(res.title).to.be.equal 'Fixture'
+        done()
+    it 'should load a resource folder with summary', (done)->
+      res = Resource 'fixture/folder', cwd: __dirname
+      should.exist res
+      res.load read:true, (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', 'README'
+        expect(res.contents).have.length 4
+        expect(res.summary).to.be.equal '\nthis is README.'
+        expect(res.date).to.be.an.instanceOf Date
+        expect(res.title).to.be.equal 'Folder'
         done()
     it 'should load a resource file', (done)->
       res = Resource 'fixture/file0.md', cwd: __dirname
