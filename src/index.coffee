@@ -198,6 +198,7 @@ module.exports = class Resource
       return done(err) if err
       if aConfig
         that.assign aConfig, 'contents'
+        that.$cfgPath = aConfig.$cfgPath if aConfig.$cfgPath
         # aConfig.content: the markdown string removing the config.
         that.summary = aConfig.content if aConfig.content and !aConfig.summary
         if vDir = that.isDirectory()
