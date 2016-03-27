@@ -70,8 +70,17 @@ describe 'ResourceFile', ->
       should.exist res
       res.loadSync(read:true)
       res.should.have.property 'config', 'file0'
+      expect(res.summary).to.be.not.exist
       expect(res.date).to.be.an.instanceOf Date
       expect(res.title).to.be.equal 'File 0'
+    it 'should load a resource file with summary', ->
+      res = Resource 'fixture/folder/file10.md', cwd: __dirname
+      should.exist res
+      res.loadSync(read:true)
+      res.should.have.property 'config', 'file10'
+      expect(res.summary).to.be.equal 'this is a summary.'
+      expect(res.date).to.be.an.instanceOf Date
+      expect(res.title).to.be.equal 'File 10'
     it 'should not get title and date from a resource file if property exists', ->
       res = Resource 'fixture/file0.md', cwd: __dirname
       should.exist res
@@ -195,8 +204,19 @@ describe 'ResourceFile', ->
       res.load read:true, (err, result)->
         return done(err) if err
         res.should.have.property 'config', 'file0'
+        expect(res.summary).to.be.not.exist
         expect(res.date).to.be.an.instanceOf Date
         expect(res.title).to.be.equal 'File 0'
+        done()
+    it 'should load a resource file with summary', (done)->
+      res = Resource 'fixture/folder/file10.md', cwd: __dirname
+      should.exist res
+      res.load read:true, (err, result)->
+        return done(err) if err
+        res.should.have.property 'config', 'file10'
+        expect(res.summary).to.be.equal 'this is a summary.'
+        expect(res.date).to.be.an.instanceOf Date
+        expect(res.title).to.be.equal 'File 10'
         done()
     it 'should not get title and date from a resource file if property exists', (done)->
       res = Resource 'fixture/file0.md', cwd: __dirname
