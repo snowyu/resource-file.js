@@ -66,7 +66,7 @@ The Resource File Class inherited from
 
 ### v0.4
 
-+ add the `summary` attribute to the Resource (v0.4.3).
++ add the `summary` attribute to the Resource (v0.4.4).
 * the filter should run after loading config.
 * can work on windows
 + add the `title`, `date` attributes to the Resource (v0.4.2)
