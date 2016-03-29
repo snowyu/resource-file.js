@@ -48,6 +48,9 @@ module.exports = class Resource
   path = null
 
   constructor: (aPath, aOptions, done)->
+    if !aOptions or !aOptions.hasOwnProperty 'load'
+      aOptions = {} unless aOptions
+      aOptions.load = true
     return new Resource(aPath, aOptions, done) unless @ instanceof Resource
     super
 

@@ -61,11 +61,13 @@ expect(res.title).to.be.equal 'Fixture'
 The Resource File Class inherited from
 [AdvanceFile][AdvanceFile]
 
+Note: the `load` option default to true when creating resource file object.
 
 ## Changes
 
 ### v0.4
 
+* set the `load` option default to true when creating resource file object(v0.4.6).
 + add the `summary` attribute to the Resource (v0.4.4).
 * the filter should run after loading config.
 * can work on windows

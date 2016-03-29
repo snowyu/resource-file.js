@@ -47,6 +47,7 @@ describe 'ResourceFile', ->
     res = Resource 'fixture', cwd: __dirname
     should.exist res
     res.should.be.instanceOf Resource
+    expect(res.isDirectory()).to.be.true
   describe '#loadSync', ->
     it 'should load a resource folder', ->
       res = Resource 'fixture', cwd: __dirname
@@ -310,7 +311,7 @@ describe 'ResourceFile', ->
 
   describe '#toObject', ->
     it 'should convert a resource to a plain object', ->
-      res = Resource 'fixture', cwd: __dirname
+      res = Resource 'fixture', cwd: __dirname, load:false
       should.exist res
       result = res.toObject()
       result.should.be.deep.equal
@@ -327,7 +328,7 @@ describe 'ResourceFile', ->
       result.should.not.have.ownProperty 'stat'
       result.should.not.have.ownProperty 'contents'
     it 'should convert a resource to a plain object and exclude', ->
-      res = Resource 'fixture', cwd: __dirname
+      res = Resource 'fixture', cwd: __dirname, load:false
       should.exist res
       result = res.toObject(null, 'base')
       result.should.be.deep.equal
@@ -341,5 +342,6 @@ describe 'ResourceFile', ->
   # describe '#filter', filterBehaviorTest Resource,
   #   {path:path.join(__dirname, 'fixture/folder'), base: __dirname},
   #   (file)->
+  #     console.log file, path.basename(file.path) is 'file10.md'
   #     path.basename(file.path) is 'file10.md'
-  #   ,['fixture/folder/file10.md']
+  #   ,[path.join 'fixture','folder','file10.md']
